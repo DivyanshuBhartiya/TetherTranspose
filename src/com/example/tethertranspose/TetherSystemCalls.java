@@ -209,6 +209,23 @@ public class TetherSystemCalls {
 		}
 	}
 	
+	int deleteGateway()
+	{
+		try
+		{
+			Command comm = new CommandCapture(counter.incrementAndGet(), "ip route del default");
+			Log.d(TAG, "ip route del default");
+			RootTools.getShell(true).add(comm).waitForFinish();
+			return comm.exitCode();
+		}
+		catch(Exception e)
+		{
+			Log.e(TAG, "Exception caught in deleteGateway. Message = " + e.getMessage());
+			return -1;
+		}
+	}
+	
+	
 	boolean checkUSBPlugged(Context context)
 	{
 		Intent intent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));

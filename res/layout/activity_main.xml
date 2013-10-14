@@ -105,39 +105,39 @@
         android:text="Stop" />
 
     <CheckBox
-        android:id="@+id/dns2"
+        android:id="@+id/tetherSupport"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/trafficRow"
         android:layout_alignLeft="@+id/trafficRow"
         android:layout_marginBottom="20dp"
-        android:text="DNS 4.2.2.2" />
+        android:text="Tethering Supported" />
 
     <CheckBox
-        android:id="@+id/dns1"
+        android:id="@+id/ip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/dns2"
-        android:layout_alignLeft="@+id/dns2"
+        android:layout_above="@+id/tetherSupport"
+        android:layout_alignLeft="@+id/tetherSupport"
         android:layout_marginBottom="20dp"
-        android:text="DNS 8.8.8.8" />
+        android:text="Ip present" />
 
     <CheckBox
-        android:id="@+id/gwRoute"
+        android:id="@+id/ifconfig"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/dns1"
-        android:layout_alignLeft="@+id/dns1"
+        android:layout_above="@+id/ip"
+        android:layout_alignLeft="@+id/ip"
         android:layout_marginBottom="20dp"
-        android:text="Gateway route " />
+        android:text="Ifconfig present " />
 
     <CheckBox
-        android:id="@+id/gwPing"
+        android:id="@+id/root"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/gwRoute"
-        android:layout_alignLeft="@+id/gwRoute"
+        android:layout_above="@+id/ifconfig"
+        android:layout_alignLeft="@+id/ifconfig"
         android:layout_marginBottom="20dp"
-        android:text="Gateway ping" />
+        android:text="Root Access" />
 
 </RelativeLayout>
