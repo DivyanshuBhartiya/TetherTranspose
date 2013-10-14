@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,13 +24,21 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
 	private static String TAG = "Tether Transpose";
+	
 	private static Button startButton = null;
 	private static Button stopButton = null;
+	
 	private RelativeLayout trafficRow = null;
 	private TextView downloadData = null;
 	private TextView uploadData = null;
 	private TextView downloadRate = null;
 	private TextView uploadRate = null;
+	
+	private CheckBox pingGateway = null;
+	private CheckBox gatewayRoute = null;
+	private CheckBox dns1CheckBox = null;
+	private CheckBox dns2CheckBox = null;
+	
 	private static TetherSystemCalls tetherCalls = null;
 	private static Shell shell = null;
 	private static boolean firstTime = true;
@@ -47,12 +56,25 @@ public class MainActivity extends Activity {
         startButton = (Button) findViewById(R.id.button1);
         stopButton = (Button) findViewById(R.id.button2);
         tetherCalls = new TetherSystemCalls();
+        
         this.trafficRow = (RelativeLayout)findViewById(R.id.trafficRow);
         this.downloadData = (TextView)findViewById(R.id.trafficDown);
         this.uploadData = (TextView)findViewById(R.id.trafficUp);
         this.downloadRate = (TextView)findViewById(R.id.trafficDownRate);
         this.uploadRate  = (TextView)findViewById(R.id.trafficUpRate);
         
+        this.pingGateway = (CheckBox) findViewById(R.id.gwPing);
+        this.pingGateway.setVisibility(View.VISIBLE);
+        this.pingGateway.setClickable(false);
+        this.gatewayRoute = (CheckBox) findViewById(R.id.gwRoute);
+        this.gatewayRoute.setVisibility(View.VISIBLE);
+        this.gatewayRoute.setClickable(false);
+        this.dns1CheckBox = (CheckBox) findViewById(R.id.dns1);
+        this.dns1CheckBox.setVisibility(View.VISIBLE);
+        this.dns1CheckBox.setClickable(false);
+        this.dns2CheckBox = (CheckBox) findViewById(R.id.dns2);
+        this.dns2CheckBox.setVisibility(View.VISIBLE);
+        this.dns2CheckBox.setClickable(false);
         
         if(!tetherCalls.checkForRoot())
         {
@@ -91,6 +113,13 @@ public class MainActivity extends Activity {
 			return;
 		}
 		Log.d(TAG, "Tethering supported");
+		if(!tetherCalls.checkUSBPlugged(MainActivity.this))
+		{
+			Toast.makeText(MainActivity.this,
+                    "USB is not pluged, Retry.",
+                    Toast.LENGTH_LONG).show();
+            return;
+		}
 		
         startButton.setOnClickListener(new OnClickListener(){
         	
@@ -99,7 +128,7 @@ public class MainActivity extends Activity {
 				for (String tetheredIface : tetherCalls.getTetheredIfaces(connMan))
 				{
 					int returnCode = tetherCalls.untether(connMan, tetheredIface);
-					if(returnCode != 0)
+					if(returnCode != 0) 
 					{
 						Log.e(TAG, "Untethering failed for " + tetheredIface);
 					}
@@ -108,16 +137,10 @@ public class MainActivity extends Activity {
 				
 				shell = tetherCalls.getRootShell();
 				
-				if(!tetherCalls.checkUSBPlugged(MainActivity.this))
-				{
-					Toast.makeText(MainActivity.this,
-                            "USB is not pluged, Retry.",
-                            Toast.LENGTH_LONG).show();
-                    return;
-				}
+				
 				
 				/*tetheredDev = tetherCalls.findUSBIface(tetherCalls.getTetherableIfaces(connMan), tetherCalls.getTetherableUSBRegexs(connMan));
-				tetheredDev = tetheredDev;
+				tetheredDev = tetheredDev; 
 				/*if(tetheredDev==null)
 				{
 					Log.e(TAG, "TetheredDev is null");
@@ -216,21 +239,75 @@ public class MainActivity extends Activity {
     {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "Activity ResultCode " +resultCode+" Request Code " + requestCode);
-        int ret = tetherCalls.pingGateway(shell, "192.168.42.130");
+        String gateway = "192.168.42.130";
+        int ret = tetherCalls.pingGateway(shell, gateway);
+        if(ret!=0)
+        {
+        	Toast.makeText(MainActivity.this,
+                    "Gateway "+gateway+"cannot be pinged.",
+                    Toast.LENGTH_LONG).show();
+        	this.pingGateway.setChecked(false);
+            return;
+        }
         Log.d(TAG, "Pinging succesfull . return to main activity");
-        ///new AlertDialog.Builder(MainActivity.this).setMessage("Pinging succesfull "+ret).create().show();
+        Toast.makeText(MainActivity.this,
+                "Gateway " + gateway +"ping successfull.",
+                Toast.LENGTH_LONG).show();
+        this.pingGateway.setChecked(true);
+        
         ret=tetherCalls.addGateway(shell, "rndis0", "192.168.42.130");
+        if(ret!=0)
+        {
+        	Toast.makeText(MainActivity.this,
+                    "Gateway "+gateway+"cannot be added, Retry.",
+                    Toast.LENGTH_LONG).show();
+        	this.gatewayRoute.setChecked(false);
+            return;
+        }
         Log.d(TAG, "Gateway command return code " + ret);
+        Toast.makeText(MainActivity.this,
+                "Gateway " + gateway +"added successfully.",
+                Toast.LENGTH_LONG).show();
+        this.gatewayRoute.setChecked(true);
+        
         ret = tetherCalls.setDNS1(dns1);
+        if(ret!=0)
+        {
+        	Toast.makeText(MainActivity.this,
+                    "DNS "+dns1+"cannot be set, Retry.",
+                    Toast.LENGTH_LONG).show();
+        	this.dns1CheckBox.setChecked(false);
+            return;
+        }
         Log.d(TAG, "Set DNS1 command return code = " + ret);
+        Toast.makeText(MainActivity.this,
+                "DNS "+dns1+"set successfully.",
+                Toast.LENGTH_LONG).show();
+        this.dns1CheckBox.setChecked(true);
+        
         ret = tetherCalls.setDNS2(dns2);
+        if(ret!=0)
+        {
+        	Toast.makeText(MainActivity.this,
+                    "DNS "+dns2+"cannot be set, Retry.",
+                    Toast.LENGTH_LONG).show();
+        	this.dns2CheckBox.setChecked(false);
+            return;
+        }
         Log.d(TAG, "Setprop DNS2 command return code = "+ret);
+        Toast.makeText(MainActivity.this,
+                "DNS "+dns2+"set successfully.",
+                Toast.LENGTH_LONG).show();
+        this.dns2CheckBox.setChecked(true);
         
         TrafficCounter counter = new TrafficCounter();
         counter.network = "rndis0";
         traffic = new Thread(counter);
        
         traffic.start();
+        Toast.makeText(MainActivity.this,
+                "Traffic Counter started successfully.",
+                Toast.LENGTH_LONG).show();
     }
     
     protected void OnResume()
