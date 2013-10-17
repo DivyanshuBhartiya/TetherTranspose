@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -42,6 +43,7 @@ public class MainActivity extends Activity {
 	private CheckBox tetherSupport = null;
 	
 	private String gateway;
+	public static int wait;
 	
 	private static TetherSystemCalls tetherCalls = null;
 	private static Shell shell = null;
@@ -60,6 +62,7 @@ public class MainActivity extends Activity {
         startButton = (Button) findViewById(R.id.button1);
         stopButton = (Button) findViewById(R.id.button2);
         tetherCalls = new TetherSystemCalls();
+        wait=0;
         
         this.trafficRow = (RelativeLayout)findViewById(R.id.trafficRow);
         this.downloadData = (TextView)findViewById(R.id.trafficDown);
@@ -112,7 +115,7 @@ public class MainActivity extends Activity {
         this.ip.setChecked(true);
         
         final ConnectivityManager connMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        Log.d(TAG, "Connectivit Manager = " + connMan.toString());
+        Log.d(TAG, "Connectivity Manager = " + connMan.toString());
         
         if(!tetherCalls.checkTetheringSupport(connMan))
 		{
@@ -232,140 +235,175 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "Activity ResultCode " +resultCode+" Request Code " + requestCode);
         gateway = "192.168.42.130";
-        
-        final EditText ipView = new EditText(MainActivity.this);
-        ipView.setText(gateway);
-        
+        /*final ProgressDialog progDial = new ProgressDialog(MainActivity.this);
+        progDial.show(MainActivity.this, "Please wait", "Please run the PC side's instructions", true, false);
+               
+        new Thread(new Runnable() {  
+            @Override
+            public void run() {
+                  // TODO Auto-generated method stub
+                  try
+                  {
+                	    Thread.sleep(5000);
+                  }catch(Exception e){}
+                  MainActivity.wait=1;
+                  progDial.dismiss();
+            }
+        }).start();
+        */
+        /*while(true)
+        	if(wait==1)
+        		break;*/
         new AlertDialog.Builder(MainActivity.this)
-        .setTitle(
-                "please confirm your new connnection ip")
-        .setView(ipView)
-        .setPositiveButton(
-                "DONE",
-                new DialogInterface.OnClickListener() 
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog,int which) 
-                    {
-                        gateway = ipView.getText().toString();
-                        if (!checkGateway(gateway)) 
-                        {
-                            new AlertDialog.Builder(
-                                    MainActivity.this)
-                                    .setMessage(
-                                            "wrong gateway!")
-                                    .setCancelable(
-                                            false)
-                                    .create()
-                                    .show();
-                            return;
-                        }
+        .setTitle("Please wait")
+        .setMessage("Complete the PC side instructions")
+        .setPositiveButton("Done", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface arg0, int arg1) {
+				// TODO Auto-generated method stub
+				
+				final EditText ipView = new EditText(MainActivity.this);
+		        ipView.setText(gateway);
+		        
+		        new AlertDialog.Builder(MainActivity.this)
+		        .setTitle(
+		                "please confirm your new connnection ip")
+		        .setView(ipView)
+		        .setPositiveButton(
+		                "DONE",
+		                new DialogInterface.OnClickListener() 
+		                {
+		                    @Override
+		                    public void onClick(DialogInterface dialog,int which) 
+		                    {
+		                        gateway = ipView.getText().toString();
+		                        if (!checkGateway(gateway)) 
+		                        {
+		                            new AlertDialog.Builder(
+		                                    MainActivity.this)
+		                                    .setMessage(
+		                                            "wrong gateway!")
+		                                    .setCancelable(
+		                                            true)
+		                                    .create()
+		                                    .show();
+		                            return;
+		                        }
 
-                        int ret = tetherCalls.pingGateway(shell, gateway);
-                        if(ret!=0)
-                        {
-                        	Toast.makeText(MainActivity.this,
-                                    "Gateway "+gateway+"cannot be pinged.",
-                                    Toast.LENGTH_LONG).show();
-                        	fail();
-                        	return;
-                        }
-                        Log.d(TAG, "Pinging succesfull . return to main activity");
-                        Toast.makeText(MainActivity.this,
-                                "Gateway " + gateway +"ping successfull.",
-                                Toast.LENGTH_LONG).show();
-                        
-                        
-                        ret=tetherCalls.addGateway(shell, "rndis0", gateway);
-                        if(ret!=0)
-                        {
-                        	Toast.makeText(MainActivity.this,
-                                    "Gateway "+gateway+"cannot be added, Retry.",
-                                    Toast.LENGTH_LONG).show();
-                        	fail();
-                        	return;
-                        }
-                        Log.d(TAG, "Gateway command return code " + ret);
-                        Toast.makeText(MainActivity.this,
-                                "Gateway " + gateway +"added successfully.",
-                                Toast.LENGTH_LONG).show();
-                        
-                        ret = tetherCalls.setDNS1(dns1);
-                        if(ret!=0)
-                        {
-                        	Toast.makeText(MainActivity.this,
-                                    "DNS "+dns1+"cannot be set, Retry.",
-                                    Toast.LENGTH_LONG).show();
-                        	return;
-                        }
-                        Log.d(TAG, "Set DNS1 command return code = " + ret);
-                        Toast.makeText(MainActivity.this,
-                                "DNS "+dns1+"set successfully.",
-                                Toast.LENGTH_LONG).show();
-                        
-                        ret = tetherCalls.setDNS2(dns2);
-                        if(ret!=0)
-                        {
-                        	Toast.makeText(MainActivity.this,
-                                    "DNS "+dns2+"cannot be set, Retry.",
-                                    Toast.LENGTH_LONG).show();
-                        	return;
-                        }
-                        Log.d(TAG, "Setprop DNS2 command return code = "+ret);
-                        Toast.makeText(MainActivity.this,
-                                "DNS "+dns2+"set successfully.",
-                                Toast.LENGTH_LONG).show();
-                        
-                        TrafficCounter counter = new TrafficCounter();
-                        counter.network = "rndis0";
-                        traffic = new Thread(counter);
-                       
-                        traffic.start();
-                        Toast.makeText(MainActivity.this,
-                                "Traffic Counter started successfully.",
-                                Toast.LENGTH_LONG).show();
-                    }
+		                        
+		                        
+		                        int ret = tetherCalls.pingGateway(shell, gateway);
+		                        if(ret!=0)
+		                        {
+		                        	Log.i(TAG, "Ping return code "+ret);
+		                        	Toast.makeText(MainActivity.this,
+		                                    "Gateway "+gateway+" cannot be pinged.",
+		                                    Toast.LENGTH_LONG).show();
+		                        	//fail();
+		                        	//return;
+		                        }
+		                        Log.d(TAG, "Pinging succesfull . return to main activity");
+		                        Toast.makeText(MainActivity.this,
+		                                "Gateway " + gateway +" ping successfull.",
+		                                Toast.LENGTH_LONG).show();
+		                        
+		                        
+		                        ret=tetherCalls.addGateway(shell, "rndis0", gateway);
+		                        if(ret!=0)
+		                        {
+		                        	Toast.makeText(MainActivity.this,
+		                                    "Gateway "+gateway+"cannot be added, Retry.",
+		                                    Toast.LENGTH_LONG).show();
+		                        	fail();
+		                        	return;
+		                        }
+		                        Log.d(TAG, "Gateway command return code " + ret);
+		                        Toast.makeText(MainActivity.this,
+		                                "Gateway " + gateway +"added successfully.",
+		                                Toast.LENGTH_LONG).show();
+		                        
+		                        ret = tetherCalls.setDNS1(dns1);
+		                        if(ret!=0)
+		                        {
+		                        	Toast.makeText(MainActivity.this,
+		                                    "DNS "+dns1+"cannot be set, Retry.",
+		                                    Toast.LENGTH_LONG).show();
+		                        	return;
+		                        }
+		                        Log.d(TAG, "Set DNS1 command return code = " + ret);
+		                        Toast.makeText(MainActivity.this,
+		                                "DNS "+dns1+"set successfully.",
+		                                Toast.LENGTH_LONG).show();
+		                        
+		                        ret = tetherCalls.setDNS2(dns2);
+		                        if(ret!=0)
+		                        {
+		                        	Toast.makeText(MainActivity.this,
+		                                    "DNS "+dns2+"cannot be set, Retry.",
+		                                    Toast.LENGTH_LONG).show();
+		                        	return;
+		                        }
+		                        Log.d(TAG, "Setprop DNS2 command return code = "+ret);
+		                        Toast.makeText(MainActivity.this,
+		                                "DNS "+dns2+"set successfully.",
+		                                Toast.LENGTH_LONG).show();
+		                        
+		                        TrafficCounter counter = new TrafficCounter();
+		                        counter.network = "rndis0";
+		                        traffic = new Thread(counter);
+		                       
+		                        traffic.start();
+		                        Toast.makeText(MainActivity.this,
+		                                "Traffic Counter started successfully.",
+		                                Toast.LENGTH_LONG).show();
+		                    }
 
-					private void fail() {
-						new AlertDialog.Builder(
-                                MainActivity.this)
-                                .setMessage("Reverse Tethering failed")
-                                .setCancelable(
-                                        false)
-                                .create()
-                                .show();
-					}
+							private void fail() {
+								new AlertDialog.Builder(
+		                                MainActivity.this)
+		                                .setMessage("Reverse Tethering failed")
+		                                .setCancelable(
+		                                        true)
+		                                .create()
+		                                .show();
+							}
 
-					private boolean checkGateway(String gateway) {
-						String[] tokens = gateway.split("\\.");
+							private boolean checkGateway(String gateway) {
+								String[] tokens = gateway.split("\\.");
 
-				        if (tokens.length != 4 || !tokens[0].equalsIgnoreCase("192")
-				                || !tokens[1].equalsIgnoreCase("168")) {
+						        if (tokens.length != 4 || !tokens[0].equalsIgnoreCase("192")
+						                || !tokens[1].equalsIgnoreCase("168")) {
 
-				            return false;
-				        }
+						            return false;
+						        }
 
-				        int third = -1;
-				        int fourth = -1;
-				        try {
-				            third = Integer.valueOf(tokens[2]);
-				            fourth = Integer.valueOf(tokens[3]);
-				        } catch (NumberFormatException e) {}
-				        if (third < 0 || third > 255) {
+						        int third = -1;
+						        int fourth = -1;
+						        try {
+						            third = Integer.valueOf(tokens[2]);
+						            fourth = Integer.valueOf(tokens[3]);
+						        } catch (NumberFormatException e) {}
+						        if (third < 0 || third > 255) {
 
-				            return false;
-				        }
+						            return false;
+						        }
 
-				        if (fourth < 0 || fourth > 255) {
+						        if (fourth < 0 || fourth > 255) {
 
-				            return false;
-				        }
-				        return true;
-					}
+						            return false;
+						        }
+						        return true;
+							}
 
-                }
+		                }
 
-        ).show();
+		        ).show();
+			}
+		})
+        .create().show();
+        
+        
 
 }
         

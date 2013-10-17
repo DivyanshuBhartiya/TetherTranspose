@@ -165,8 +165,8 @@ public class TetherSystemCalls {
 	{
 		try
 		{
-			Command comm = new CommandCapture(counter.incrementAndGet(), "ping " + gateway);
-			RootTools.getShell(true).add(comm).waitForFinish(1000);
+			Command comm = new CommandCapture(counter.incrementAndGet(), "ping -c 4 " + gateway);
+			RootTools.getShell(true).add(comm).waitForFinish();
 			Log.d(TAG, "ping " + gateway);
 			return comm.exitCode();
 		}
@@ -290,6 +290,22 @@ public class TetherSystemCalls {
 		{
 			float bytes = (float)((int)(rate*100/1024/1024))/100;
 			return bytes +"mbps";
+		}
+	}
+
+	public int configureDHCP(String dev) {
+		// TODO Auto-generated method stub
+		try
+		{
+			Command comm = new CommandCapture(counter.incrementAndGet(),"netcfg "+dev+" dhcp");
+			Log.d(TAG, "netcfg "+dev+" dhcp");
+			RootTools.getShell(true).add(comm).waitForFinish(10000);
+			return comm.exitCode();
+		}
+		catch(Exception e)
+		{
+			Log.e(TAG, "Exception caught in configureDHCP. Message = " + e.getMessage());
+			return -1;
 		}
 	}
 }
