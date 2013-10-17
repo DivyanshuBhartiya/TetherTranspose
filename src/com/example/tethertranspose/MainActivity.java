@@ -26,7 +26,7 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	private static String TAG = "Tether Transpose";
+	private static String TAG = "TetherTranspose";
 	
 	private static Button startButton = null;
 	private static Button stopButton = null;
@@ -235,25 +235,7 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "Activity ResultCode " +resultCode+" Request Code " + requestCode);
         gateway = "192.168.42.130";
-        /*final ProgressDialog progDial = new ProgressDialog(MainActivity.this);
-        progDial.show(MainActivity.this, "Please wait", "Please run the PC side's instructions", true, false);
-               
-        new Thread(new Runnable() {  
-            @Override
-            public void run() {
-                  // TODO Auto-generated method stub
-                  try
-                  {
-                	    Thread.sleep(5000);
-                  }catch(Exception e){}
-                  MainActivity.wait=1;
-                  progDial.dismiss();
-            }
-        }).start();
-        */
-        /*while(true)
-        	if(wait==1)
-        		break;*/
+        
         new AlertDialog.Builder(MainActivity.this)
         .setTitle("Please wait")
         .setMessage("Complete the PC side instructions")
@@ -315,8 +297,15 @@ public class MainActivity extends Activity {
 		                        	Toast.makeText(MainActivity.this,
 		                                    "Gateway "+gateway+"cannot be added, Retry.",
 		                                    Toast.LENGTH_LONG).show();
-		                        	fail();
-		                        	return;
+		                        	int c= tetherCalls.configureDHCP("rndis0");
+		                        	if(c!=0)
+		                        	{
+		                        		Toast.makeText(MainActivity.this, "netcfg rndis0 dhcp : Error", Toast.LENGTH_LONG).show();
+		                        		fail();
+		                        		return;
+		                        	}
+		                        	//fail();
+		                        	//return;
 		                        }
 		                        Log.d(TAG, "Gateway command return code " + ret);
 		                        Toast.makeText(MainActivity.this,

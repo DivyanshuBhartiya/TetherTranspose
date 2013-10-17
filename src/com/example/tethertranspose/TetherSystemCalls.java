@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TetherSystemCalls {
-	private static String TAG = "Tether Transpose";
+	private static String TAG = "TetherTranspose";
 	private static AtomicInteger counter = new AtomicInteger();
 
 	boolean checkForRoot()
