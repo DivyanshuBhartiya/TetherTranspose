@@ -60,7 +60,9 @@ public class MainActivity extends Activity {
         
         getCurrentInstance = this;
         startButton = (Button) findViewById(R.id.button1);
+        startButton.setBackgroundResource(R.drawable.start);
         stopButton = (Button) findViewById(R.id.button2);
+        stopButton.setBackgroundResource(R.drawable.stop);
         tetherCalls = new TetherSystemCalls();
         wait=0;
         
