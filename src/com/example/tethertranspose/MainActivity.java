@@ -87,6 +87,7 @@ public class MainActivity extends Activity {
         
         if(!tetherCalls.checkForRoot())
         {
+        	tetherCalls.addToLog("ERROR : Your phone is not rooted. Please root your phone.");
         	this.root.setChecked(false);
         	new AlertDialog.Builder(this)
             .setMessage(
@@ -95,9 +96,11 @@ public class MainActivity extends Activity {
         	return;
         }
         this.root.setChecked(true);
+        tetherCalls.addToLog("Root access checked. Root is present.");
         
         if(!tetherCalls.checkForIfconfig())
         {
+        	tetherCalls.addToLog("ERROR : Ifconfig binary is not present. Please check your binaries.");
         	this.ifconfig.setChecked(false);
             new AlertDialog.Builder(this)
         	.setMessage("Ifconfig is needed. Check your bin")
@@ -105,15 +108,18 @@ public class MainActivity extends Activity {
         	return;
         }
         this.ifconfig.setChecked(true);
+        tetherCalls.addToLog("Ifconfig access checked. Ifconfig is present");
         
         if(!tetherCalls.checkForIp())
         {
+        	tetherCalls.addToLog("ERROR : Ip binary is not present. Please check your binaries.");
         	this.ip.setChecked(false);
             new AlertDialog.Builder(this)
         	.setMessage("Ip is needed. Check you bin")
         	.setCancelable(true).create().show();
         	return ;
         }
+        tetherCalls.addToLog("Ip access checked. Ip is present");
         this.ip.setChecked(true);
         
         final ConnectivityManager connMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -121,6 +127,7 @@ public class MainActivity extends Activity {
         
         if(!tetherCalls.checkTetheringSupport(connMan))
 		{
+        	tetherCalls.addToLog("ERROR : Tethering is not Supported.");
 			Log.e(TAG, "Tethering is not supported");
 			this.tetherSupport.setChecked(false);
 			new AlertDialog.Builder(MainActivity.this)
@@ -128,16 +135,19 @@ public class MainActivity extends Activity {
 			.setCancelable(true).create().show();
 			return;
 		}
+        tetherCalls.addToLog("ethering is supported");
 		Log.d(TAG, "Tethering supported");
 		this.tetherSupport.setChecked(true);
         
 		if(!tetherCalls.checkUSBPlugged(MainActivity.this))
 		{
+			tetherCalls.addToLog("ERROR : USB is not plugged");
 			Toast.makeText(MainActivity.this,
                     "USB is not pluged, Retry.",
                     Toast.LENGTH_LONG).show();
             return;
 		}
+		tetherCalls.addToLog("USB is plugged");
 		
         startButton.setOnClickListener(new OnClickListener(){
         	
@@ -148,8 +158,10 @@ public class MainActivity extends Activity {
 					int returnCode = tetherCalls.untether(connMan, tetheredIface);
 					if(returnCode != 0) 
 					{
+						tetherCalls.addToLog("ERROR : Untethering failed for "+tetheredIface);
 						Log.e(TAG, "Untethering failed for " + tetheredIface);
 					}
+					tetherCalls.addToLog("Untethering successful for "+tetheredIface);
 					Log.d(TAG, "Untethering succesfull for " + tetheredIface);
 				}
 				
@@ -173,8 +185,10 @@ public class MainActivity extends Activity {
 				int ret = tetherCalls.untether(connMan, tetheredDev);
 				if(ret != 0)
 				{
+					tetherCalls.addToLog("ERROR : Untethering failed for "+tetheredDev);
 					Log.e(TAG, "Untethering failed for " + tetheredDev);
 				}
+				tetherCalls.addToLog("Untethering successful for "+ tetheredDev);
 				Log.d(TAG, "Untethering succesfull for " + tetheredDev);
 				
 			}
@@ -236,7 +250,7 @@ public class MainActivity extends Activity {
     {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "Activity ResultCode " +resultCode+" Request Code " + requestCode);
-        gateway = "192.168.42.130";
+        gateway = "192.168.42.247";
         
         new AlertDialog.Builder(MainActivity.this)
         .setTitle("Please wait")
@@ -262,8 +276,10 @@ public class MainActivity extends Activity {
 		                    public void onClick(DialogInterface dialog,int which) 
 		                    {
 		                        gateway = ipView.getText().toString();
+		                        tetherCalls.addToLog("IP added by you is "+gateway);
 		                        if (!checkGateway(gateway)) 
 		                        {
+		                        	tetherCalls.addToLog("ERROR : You added an invalid gateway");
 		                            new AlertDialog.Builder(
 		                                    MainActivity.this)
 		                                    .setMessage(
@@ -276,17 +292,19 @@ public class MainActivity extends Activity {
 		                        }
 
 		                        
-		                        
+		                        tetherCalls.addToLog("You added "+ gateway);
 		                        int ret = tetherCalls.pingGateway(shell, gateway);
-		                        if(ret!=0)
+		                        if(ret<0)
 		                        {
+		                        	tetherCalls.addToLog("ERROR : Gateway cannot be pinged");
 		                        	Log.i(TAG, "Ping return code "+ret);
 		                        	Toast.makeText(MainActivity.this,
 		                                    "Gateway "+gateway+" cannot be pinged.",
 		                                    Toast.LENGTH_LONG).show();
-		                        	//fail();
-		                        	//return;
+		                        	fail();
+		                        	return;
 		                        }
+		                        tetherCalls.addToLog("Gateway ping succesfull");
 		                        Log.d(TAG, "Pinging succesfull . return to main activity");
 		                        Toast.makeText(MainActivity.this,
 		                                "Gateway " + gateway +" ping successfull.",
@@ -296,12 +314,14 @@ public class MainActivity extends Activity {
 		                        ret=tetherCalls.addGateway(shell, "rndis0", gateway);
 		                        if(ret!=0)
 		                        {
+		                        	tetherCalls.addToLog("WARNING : Gateway cannot be added by \"ip route add default via "+gateway+" dev "+" rndis0\"");
 		                        	Toast.makeText(MainActivity.this,
 		                                    "Gateway "+gateway+"cannot be added, Retry.",
 		                                    Toast.LENGTH_LONG).show();
 		                        	int c= tetherCalls.configureDHCP("rndis0");
 		                        	if(c!=0)
 		                        	{
+		                        		tetherCalls.addToLog("ERROR : Gateway cannot be added by \"netcfg rndis0 dhcp\"");
 		                        		Toast.makeText(MainActivity.this, "netcfg rndis0 dhcp : Error", Toast.LENGTH_LONG).show();
 		                        		fail();
 		                        		return;
@@ -309,6 +329,7 @@ public class MainActivity extends Activity {
 		                        	//fail();
 		                        	//return;
 		                        }
+		                        tetherCalls.addToLog("Gateway added SUCCESFULLY");
 		                        Log.d(TAG, "Gateway command return code " + ret);
 		                        Toast.makeText(MainActivity.this,
 		                                "Gateway " + gateway +"added successfully.",
@@ -317,11 +338,13 @@ public class MainActivity extends Activity {
 		                        ret = tetherCalls.setDNS1(dns1);
 		                        if(ret!=0)
 		                        {
+		                        	tetherCalls.addToLog("ERROR : DNS "+dns1+" cannot be added");
 		                        	Toast.makeText(MainActivity.this,
 		                                    "DNS "+dns1+"cannot be set, Retry.",
 		                                    Toast.LENGTH_LONG).show();
 		                        	return;
 		                        }
+		                        tetherCalls.addToLog("DNS "+dns1+" added succesfully");
 		                        Log.d(TAG, "Set DNS1 command return code = " + ret);
 		                        Toast.makeText(MainActivity.this,
 		                                "DNS "+dns1+"set successfully.",
@@ -330,11 +353,13 @@ public class MainActivity extends Activity {
 		                        ret = tetherCalls.setDNS2(dns2);
 		                        if(ret!=0)
 		                        {
+		                        	tetherCalls.addToLog("ERROR : DNS "+dns2+" cannot be added");
 		                        	Toast.makeText(MainActivity.this,
 		                                    "DNS "+dns2+"cannot be set, Retry.",
 		                                    Toast.LENGTH_LONG).show();
 		                        	return;
 		                        }
+		                        tetherCalls.addToLog("DNS "+dns1+" added succesfully");
 		                        Log.d(TAG, "Setprop DNS2 command return code = "+ret);
 		                        Toast.makeText(MainActivity.this,
 		                                "DNS "+dns2+"set successfully.",
@@ -345,12 +370,14 @@ public class MainActivity extends Activity {
 		                        traffic = new Thread(counter);
 		                       
 		                        traffic.start();
+		                        tetherCalls.addToLog("Traffic Counter started");
 		                        Toast.makeText(MainActivity.this,
 		                                "Traffic Counter started successfully.",
 		                                Toast.LENGTH_LONG).show();
 		                    }
 
 							private void fail() {
+								tetherCalls.addToLog("ERROR : UNSUCCESFULL. GATEWAY CANNOT BE ADDED");
 								new AlertDialog.Builder(
 		                                MainActivity.this)
 		                                .setMessage("Reverse Tethering failed")

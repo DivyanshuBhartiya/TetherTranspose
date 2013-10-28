@@ -12,6 +12,10 @@ import android.net.ConnectivityManager;
 import android.os.BatteryManager;
 import android.util.Log;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -306,6 +310,30 @@ public class TetherSystemCalls {
 		{
 			Log.e(TAG, "Exception caught in configureDHCP. Message = " + e.getMessage());
 			return -1;
+		}
+	}
+	
+	public void addToLog(String data)
+	{
+		String logFileName=LogView.dataPath+"/tetherTranspose.log";
+		File logFile=new File(logFileName);
+		if(!logFile.exists())
+		{
+			try {
+				logFile.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		try {
+			BufferedWriter writer=new BufferedWriter(new FileWriter(logFile,true));
+			writer.append(data);
+			writer.newLine();
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
