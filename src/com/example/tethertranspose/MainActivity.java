@@ -30,6 +30,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
 	private static final int LOG_VIEW = 0;
+	private static final int GUIDE_VIEW = 2;
 
 	private static String TAG = "TetherTranspose";
 	
@@ -253,7 +254,7 @@ public class MainActivity extends Activity {
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) 
     {
-    	if(requestCode==0) return;
+    	if(requestCode==0 || requestCode==2) return;
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "Activity ResultCode " +resultCode+" Request Code " + requestCode);
         gateway = "192.168.42.247";
@@ -443,7 +444,8 @@ public class MainActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
     	boolean supRetVal = super.onCreateOptionsMenu(menu);
-    	SubMenu log = menu.addSubMenu(0, LOG_VIEW, 0, "View Logs");
+    	SubMenu log = menu.addSubMenu(0, LOG_VIEW, 0, "LOGS");
+    	SubMenu guide = menu.addSubMenu(0, GUIDE_VIEW, 1, "HELP");
     	//log.setIcon(drawable.ic_menu_preferences);
     	return supRetVal;
     }
@@ -456,6 +458,10 @@ public class MainActivity extends Activity {
 		        startActivityForResult(new Intent(
 		        		MainActivity.this, LogView.class), 0);
 		        break;
+	    	case GUIDE_VIEW :
+	    		startActivityForResult(new Intent(
+	    				MainActivity.this,UserGuideView.class), 2);
+	    		break;
     	}
     	return supRetVal;
     }
