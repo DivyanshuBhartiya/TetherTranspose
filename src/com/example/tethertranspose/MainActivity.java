@@ -7,6 +7,7 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.R.drawable;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -15,6 +16,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -25,6 +28,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
+
+	private static final int LOG_VIEW = 0;
 
 	private static String TAG = "TetherTranspose";
 	
@@ -43,7 +48,6 @@ public class MainActivity extends Activity {
 	private CheckBox tetherSupport = null;
 	
 	private String gateway;
-	public static int wait;
 	
 	private static TetherSystemCalls tetherCalls = null;
 	private static Shell shell = null;
@@ -64,7 +68,8 @@ public class MainActivity extends Activity {
         stopButton = (Button) findViewById(R.id.button2);
         stopButton.setBackgroundResource(R.drawable.stop);
         tetherCalls = new TetherSystemCalls();
-        wait=0;
+        
+        LogView.setPath(this.getApplicationContext().getFilesDir().getParent());
         
         this.trafficRow = (RelativeLayout)findViewById(R.id.trafficRow);
         this.downloadData = (TextView)findViewById(R.id.trafficDown);
@@ -248,6 +253,7 @@ public class MainActivity extends Activity {
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) 
     {
+    	if(requestCode==0) return;
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "Activity ResultCode " +resultCode+" Request Code " + requestCode);
         gateway = "192.168.42.247";
@@ -436,9 +442,21 @@ public class MainActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+    	boolean supRetVal = super.onCreateOptionsMenu(menu);
+    	SubMenu log = menu.addSubMenu(0, LOG_VIEW, 0, "View Logs");
+    	//log.setIcon(drawable.ic_menu_preferences);
+    	return supRetVal;
     }
     
-    
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+    	boolean supRetVal = super.onOptionsItemSelected(menuItem);
+    	Log.d(TAG, "Menuitem:getId  -  "+menuItem.getItemId()); 
+    	switch (menuItem.getItemId()) {
+	    	case LOG_VIEW :
+		        startActivityForResult(new Intent(
+		        		MainActivity.this, LogView.class), 0);
+		        break;
+    	}
+    	return supRetVal;
+    }
 }

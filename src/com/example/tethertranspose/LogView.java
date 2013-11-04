@@ -30,7 +30,7 @@ public class LogView extends Activity{
 	
 	private WebView webView = null;
 	
-	public void setPath(String path)
+	public static void setPath(String path)
 	{
 		dataPath=path;
 	}
@@ -38,8 +38,6 @@ public class LogView extends Activity{
 	public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 	        setContentView(R.layout.log_view);
-	        
-	        // Init Application
 	        
 	        this.webView = (WebView) findViewById(R.id.webviewLog);
 	        this.webView.getSettings().setJavaScriptEnabled(false);
@@ -63,7 +61,7 @@ public class LogView extends Activity{
 		String data = "";
 		try
 		{
-			File logFile= new File("");
+			File logFile= new File(dataPath+"/tetherTranspose.log");
 			fileInputStream = new FileInputStream(logFile);
 			inputStreamReader = new InputStreamReader(fileInputStream,"utf-8");
 			char[] buffer = new char[(int) logFile.length()];

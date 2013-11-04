@@ -319,8 +319,10 @@ public class TetherSystemCalls {
 		File logFile=new File(logFileName);
 		if(!logFile.exists())
 		{
+			Log.d(TAG, logFileName+" does not exist.");
 			try {
 				logFile.createNewFile();
+				Log.d(TAG, logFileName+" created");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
